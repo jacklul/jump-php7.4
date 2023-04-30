@@ -46,7 +46,7 @@ class Weather extends AbstractAPI {
 
         // Use the cache to store/retrieve data, make an md5 hash of latlong so it is not possible
         // to track location history form the stored cache.
-        $weatherdata = $this->cache->load(cachename: 'weatherdata', key: md5(json_encode($latlong)), callback: function() use ($url) {
+        $weatherdata = $this->cache->load('weatherdata', md5(json_encode($latlong)), function() use ($url) {
             // Ask the API for some data.
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

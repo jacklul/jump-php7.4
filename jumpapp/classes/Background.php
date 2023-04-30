@@ -21,11 +21,12 @@ namespace Jump;
  * @license MIT
  */
 class Background {
+    private Config $config;
 
     private string $backgroundsdirectory;
     private array $backgroundfiles;
 
-    public function __construct(private Config $config) {
+    public function __construct(Config $config) {
         $this->config = $config;
         $this->backgroundsdirectory = $config->get('backgroundsdir');
         $this->webaccessibledir = str_replace($config->get('wwwroot'), '', $config->get('backgroundsdir'));

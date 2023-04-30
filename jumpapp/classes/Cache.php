@@ -14,6 +14,7 @@
 namespace Jump;
 
 use Nette\Caching;
+use Nette\Caching\Storage;
 
 /**
  * Defines caches to be used throughout the site and provides a wrapper around
@@ -23,8 +24,9 @@ use Nette\Caching;
  * @license MIT
  */
 class Cache {
+    private Config $config;
 
-    private Caching\Storages\FileStorage|Caching\Storages\DevNullStorage $storage;
+    private Storage $storage;
 
     /**
      * The definition of various caches used throughout the application.
@@ -39,7 +41,8 @@ class Cache {
       *
       * @param Config $config
       */
-    public function __construct(private Config $config) {
+    public function __construct(Config $config) {
+        $this->config = $config;
         // Define the various caches used throughout the app.
         $this->caches = [
             'languages' => [
@@ -139,7 +142,7 @@ class Cache {
      * @param callable $callback The code from which the result should be stored in cache.
      * @return mixed The result of callback function retreieved from cache.
      */
-    public function load(string $cachename, ?string $key = 'default', callable $callback = null): mixed {
+    public function load(string $cachename, ?string $key = 'default', callable $callback = null) {
         $this->init_cache($cachename, $key);
         // Retrieve the initialised cache object from $caches.
         if ($callback === null) {
@@ -163,7 +166,7 @@ class Cache {
      * @param mixed $data
      * @return void
      */
-    public function save(string $cachename, mixed $data, ?string $key = 'default'): mixed {
+    public function save(string $cachename, $data, ?string $key = 'default') {
         $this->init_cache($cachename, $key);
         $dependencies = [$this->caches[$cachename]['expirationtype'] => $this->caches[$cachename]['expirationparams']];
         return $this->caches[$cachename]['cache'][$key]->save($cachename.'/'.$key, $data, $dependencies);

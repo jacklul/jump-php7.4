@@ -36,7 +36,7 @@ class HomePage extends AbstractPage {
             'metrictemp' => $this->config->parse_bool($this->config->get('metrictemp')),
             'ampmclock' => $this->config->parse_bool($this->config->get('ampmclock', false)),
             'unsplash' => !!$this->config->get('unsplashapikey', false),
-            'unsplashcolor' => $unsplashdata?->color,
+            'unsplashcolor' => $unsplashdata !== null ? $unsplashdata->color : null,
             'wwwurl' => $this->config->get_wwwurl(),
             'checkstatus' => $checkstatus,
         ];
@@ -58,7 +58,7 @@ class HomePage extends AbstractPage {
     }
 
     protected function render_content(): string {
-        return $this->cache->load(cachename: 'templates/sites', callback: function() {
+        return $this->cache->load('templates/sites', 'default', function() {
             $sites = new \Jump\Sites($this->config, $this->cache);
             $template = $this->mustache->loadTemplate('sites');
             return $template->render([
@@ -71,8 +71,8 @@ class HomePage extends AbstractPage {
     }
 
     protected function render_footer(): string {
-        return $this->cache->load(cachename: 'templates/sites', key: 'footer', callback: function() {
-            $sites = new \Jump\Sites(config: $this->config, cache: $this->cache);
+        return $this->cache->load('templates/sites', 'footer', function() {
+            $sites = new \Jump\Sites($this->config, $this->cache);
             $tags = $sites->get_tags_for_template();
             $template = $this->mustache->loadTemplate('footer');
             return $template->render([

@@ -35,7 +35,7 @@ class TagPage extends AbstractPage {
             'metrictemp' => $this->config->parse_bool($this->config->get('metrictemp')),
             'ampmclock' => $this->config->parse_bool($this->config->get('ampmclock', false)),
             'unsplash' => !!$this->config->get('unsplashapikey', false),
-            'unsplashcolor' => $unsplashdata?->color,
+            'unsplashcolor' => $unsplashdata !== null ? $unsplashdata->color : null,
             'wwwurl' => $this->config->get_wwwurl(),
             'checkstatus' => $checkstatus,
         ];
@@ -58,12 +58,12 @@ class TagPage extends AbstractPage {
 
     protected function render_content(): string {
         $cachekey = isset($this->tagname) ? 'tag:'.$this->tagname : null;
-        return $this->cache->load(cachename: 'templates/sites', key: $cachekey, callback: function() {
-            $sites = new \Jump\Sites(config: $this->config, cache: $this->cache);
+        return $this->cache->load('templates/sites', $cachekey, function() {
+            $sites = new \Jump\Sites($this->config, $this->cache);
             try {
                 $taggedsites = $sites->get_sites_by_tag($this->tagname);
             }
-            catch (TagNotFoundException) {
+            catch (TagNotFoundException $e) {
                 ErrorPage::display($this->config, 404, 'There are no sites with this tag.');
             }
             $template = $this->mustache->loadTemplate('sites');
@@ -77,8 +77,8 @@ class TagPage extends AbstractPage {
     }
 
     protected function render_footer(): string {
-        return $this->cache->load(cachename: 'templates/sites', key: 'footer', callback: function() {
-            $sites = new \Jump\Sites(config: $this->config, cache: $this->cache);
+        return $this->cache->load('templates/sites', 'footer', function() {
+            $sites = new \Jump\Sites($this->config, $this->cache);
             $tags = $sites->get_tags_for_template();
             $template = $this->mustache->loadTemplate('footer');
             return $template->render([

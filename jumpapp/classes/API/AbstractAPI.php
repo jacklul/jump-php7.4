@@ -14,14 +14,25 @@
 namespace Jump\API;
 
 abstract class AbstractAPI {
+    protected \Jump\Config $config;
+    protected \Jump\Cache $cache;
+    protected \Nette\Http\Session $session;
+    protected \Jump\Language $language;
+    protected ?array $routeparams;
 
     public function __construct(
-        protected \Jump\Config $config,
-        protected \Jump\Cache $cache,
-        protected \Nette\Http\Session $session,
-        protected \Jump\Language $language,
-        protected ?array $routeparams
-    ){}
+        \Jump\Config $config,
+        \Jump\Cache $cache,
+        \Nette\Http\Session $session,
+        \Jump\Language $language,
+        ?array $routeparams
+    ){
+        $this->config = $config;
+        $this->cache = $cache;
+        $this->session = $session;
+        $this->language = $language;
+        $this->routeparams = $routeparams;
+    }
 
     protected function send_json_header(): void {
         header('Content-Type: application/json; charset=utf-8');

@@ -27,6 +27,6 @@ $language = new Jump\Language($config, $cache);
 // script asynchronously to refresh the cache for next time.
 if (http_response_code() === false) {
     $unsplashdata = Jump\Unsplash::load_cache_unsplash_data($config, $language);
-    $cache->save(cachename: 'unsplash', data: $unsplashdata);
+    $cache->save('unsplash', $unsplashdata);
     die('Cached data from Unsplash');
 }

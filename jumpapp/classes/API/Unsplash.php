@@ -19,11 +19,11 @@ class Unsplash extends AbstractAPI {
 
         $this->validate_token();
 
-        $unsplashdata = $this->cache->load(cachename: 'unsplash');
+        $unsplashdata = $this->cache->load('unsplash');
 
         if ($unsplashdata == null) {
             $unsplashdata = \Jump\Unsplash::load_cache_unsplash_data($this->config, $this->language);
-            $this->cache->save(cachename: 'unsplash', data: $unsplashdata);
+            $this->cache->save('unsplash', $unsplashdata);
         }
 
         $toexec = '/usr/bin/nohup /usr/bin/php -f ' . $this->config->get('wwwroot') . '/cli/cacheunsplash.php >/dev/null 2>&1 &';

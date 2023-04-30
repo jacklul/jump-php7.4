@@ -115,7 +115,7 @@ class Config {
      * @param bool $strict Throw exception if requested param is not found, or return null.
      * @return mixed The selected value from the configuration array.
      */
-    public function get(string $key, $strict = true): mixed {
+    public function get(string $key, $strict = true) {
         $key = strtolower($key);
         if (!$this->config->has($key) && $strict === true) {
             throw new ConfigException('Config key does not exist... ('.$key.')');
@@ -139,7 +139,7 @@ class Config {
      * @param mixed $input A string representing a boolean value... "true", "yes", "no", "false" etc.
      * @return mixed Returns a proper boolean or null on failure.
      */
-    public function parse_bool(mixed $input): mixed {
+    public function parse_bool($input) {
         return filter_var($input,FILTER_VALIDATE_BOOLEAN,FILTER_NULL_ON_FAILURE);
     }
 

@@ -14,6 +14,11 @@
 namespace Jump\Pages;
 
 abstract class AbstractPage {
+    protected \Jump\Config $config;
+    protected \Jump\Cache $cache;
+    protected \Nette\Http\Session $session;
+    protected \Jump\Language $language;
+    protected ?array $routeparams;
 
     protected \Mustache_Engine $mustache;
     private array $outputarray;
@@ -26,12 +31,18 @@ abstract class AbstractPage {
      * @param string|null $generic param, passed from router.
      */
     public function __construct(
-        protected \Jump\Config $config,
-        protected \Jump\Cache $cache,
-        protected \Nette\Http\Session $session,
-        protected \Jump\Language $language,
-        protected ?array $routeparams
+        \Jump\Config $config,
+        \Jump\Cache $cache,
+        \Nette\Http\Session $session,
+        \Jump\Language $language,
+        ?array $routeparams
     ){
+        $this->config = $config;
+        $this->cache = $cache;
+        $this->session = $session;
+        $this->language = $language;
+        $this->routeparams = $routeparams;
+
         $this->hastags = false;
         $this->mustache = new \Mustache_Engine([
             'loader' => new \Mustache_Loader_FilesystemLoader($this->config->get('templatedir')),

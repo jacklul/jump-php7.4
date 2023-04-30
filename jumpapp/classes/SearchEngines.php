@@ -19,6 +19,10 @@ use Jump\Exceptions\ConfigException;
  * Loads and validates the search engines defined in searchengines.json.
  */
 class SearchEngines {
+    private Config $config;
+    private Cache $cache;
+    private Language $language;
+
     private array $default;
     private string $searchfilelocation;
     private array $loadedsearchengines;
@@ -26,7 +30,9 @@ class SearchEngines {
     /**
      * Automatically load searchengines.json on instantiation.
      */
-    public function __construct(private Config $config, private Cache $cache, private Language $language) {
+    public function __construct(Config $config, Cache $cache, Language $language) {
+        $this->language = $language;
+        $this->cache = $cache;
         $this->config = $config;
         $this->loadedsearchengines = [];
         $this->searchfilelocation = $this->config->get('searchenginesfile');
@@ -34,7 +40,7 @@ class SearchEngines {
 
         // Retrieve search engines from cache. Load from json file if not cached or
         // the cache has expired.
-        $this->loadedsearchengines = $this->cache->load(cachename: 'searchengines', callback: function() {
+        $this->loadedsearchengines = $this->cache->load('searchengines', 'default', function() {
             return $this->load_search_engines_from_json();
         });
 

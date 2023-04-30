@@ -25,6 +25,8 @@ use \Jump\Pages\ErrorPage;
  * @license MIT
  */
 class Language {
+    private Config $config;
+    private Cache $cache;
 
     private \Utopia\Locale\Locale $locale;
 
@@ -35,9 +37,11 @@ class Language {
      * @param Config $config
      * @param Cache $cache
      */
-    public function __construct(private Config $config, private Cache $cache) {
+    public function __construct(Config $config, Cache $cache) {
+        $this->config = $config;
+        $this->cache = $cache;
         // Try to load the translations from cache.
-        $languages = $this->cache->load(cachename: 'languages');
+        $languages = $this->cache->load('languages');
         // If they are not there or the cache has expired, then find all language files, load them up
         // again and cache them.
         if ($languages == null) {
@@ -55,7 +59,7 @@ class Language {
                 $languages[pathinfo($file, PATHINFO_FILENAME)] = json_decode($rawjson, true);
             }
             // Save the content of translation files into the cache.
-            $this->cache->save(cachename: 'languages', data: $languages);
+            $this->cache->save('languages', $languages);
         }
         // For each translation file that has been loaded, set them as available locales.
         foreach ($languages as $name => $strings) {
@@ -64,7 +68,7 @@ class Language {
         // Initialise the locale defined in the config.php language setting.
         try {
             $locale = new \Utopia\Locale\Locale($this->config->get('language'));
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             ErrorPage::display($this->config, 500, 'Provided language code has no corresponding translation file.');
         }
 
@@ -79,7 +83,7 @@ class Language {
      * @param array $placeholders
      * @return mixed
      */
-    public function get(string $string, array $placeholders = []): mixed {
+    public function get(string $string, array $placeholders = []) {
         return $this->locale->getText($string, $placeholders);
     }
 }

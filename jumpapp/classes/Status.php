@@ -14,6 +14,8 @@
 namespace Jump;
 
 class Status {
+    private Cache $cache;
+    public Site $site;
 
     private const STATUS_UNKNOWN = 'unknown';
     private const STATUS_ONLINE = 'online';
@@ -29,8 +31,10 @@ class Status {
      * @param Cache $cache
      * @param Site $site
      */
-    public function __construct(private Cache $cache, public Site $site) {
-        $this->status = $this->cache->load(cachename: 'sites/status', key: $this->site->id);
+    public function __construct(Cache $cache, Site $site) {
+        $this->cache = $cache;
+        $this->site = $site;
+        $this->status = $this->cache->load('sites/status', $this->site->id);
         $verify = (bool)($this->site->status->verify_cert ?? true);
         // Create a new client with client config.
         $this->client = new \GuzzleHttp\Client([
@@ -52,9 +56,9 @@ class Status {
         if (!$this->status) {
             // Save the status to the cache.
             $this->status = $this->cache->save(
-                cachename: 'sites/status',
-                key: $this->site->id,
-                data: $this->do_request()
+                'sites/status',
+                $this->site->id,
+                $this->do_request()
             );
         }
         // Finally return the status.
@@ -75,7 +79,7 @@ class Status {
             if ($this->client->request($method, $url)) {
                 return self::STATUS_ONLINE;
             }
-        } catch (\GuzzleHttp\Exception\ConnectException) {
+        } catch (\GuzzleHttp\Exception\ConnectException $e) {
             // Catch instances where we cant connect.
             return self::STATUS_OFFLINE;
         } catch (\GuzzleHttp\Exception\BadResponseException $e) {
@@ -87,7 +91,7 @@ class Status {
                 return self::STATUS_ONLINE;
             }
             return self::STATUS_ERROR;
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             // If anything went wrong or we had some other status code.
             return self::STATUS_UNKNOWN;
         }

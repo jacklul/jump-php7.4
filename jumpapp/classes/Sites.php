@@ -13,16 +13,18 @@
 
 namespace Jump;
 
-use \divineomega\array_undot;
 use \Jump\Exceptions\ConfigException;
 use \Jump\Exceptions\SiteNotFoundException;
 use \Jump\Exceptions\TagNotFoundException;
+use \divineomega\array_undot;
 
 /**
  * Loads, validates and caches the site data defined in sites.json
  * into an array of Site objects.
  */
 class Sites {
+    private Config $config;
+    private Cache $cache;
 
     private array $default;
     private string $sitesfilelocation;
@@ -32,7 +34,8 @@ class Sites {
     /**
      * Automatically load sites.json on instantiation.
      */
-    public function __construct(private Config $config, private Cache $cache) {
+    public function __construct(Config $config, Cache $cache) {
+        $this->cache = $cache;
         $this->config = $config;
         $this->loadedsites = [];
         $this->sitesfilelocation = $this->config->get('sitesfile');
@@ -45,14 +48,14 @@ class Sites {
 
         // Retrieve sites from cache. Load all sites from json file and docker if not
         // cached or the cache has expired.
-        $this->loadedsites = $this->cache->load(cachename: 'sites', callback: function() {
+        $this->loadedsites = $this->cache->load('sites', 'default', function() {
             // Load json file first to set defaults.
             return array_merge($this->load_sites_from_json(), $this->load_sites_from_docker());
         });
 
         // Enumerate a list of unique tags from loaded sites. Again will retrieve from
         // cache if available.
-        $this->tags = $this->cache->load(cachename: 'tags', callback: function() {
+        $this->tags = $this->cache->load('tags', 'default', function() {
             $uniquetags = [];
             foreach (array_column($this->get_sites(), 'tags') as $tags) {
                 foreach ($tags as $tag) {
@@ -299,7 +302,7 @@ class Sites {
             $site->url = $loadedsite->url;
             $site->tags = $loadedsite->tags;
             $site->iconurl = '/api/icon?siteid='.$loadedsite->id;
-            $site->status = $this->cache->load(cachename: 'sites/status', key: $site->url) ?? null;
+            $site->status = $this->cache->load('sites/status', $site->url) ?? null;
             $searchlist[] = $site;
         }
         return $searchlist;

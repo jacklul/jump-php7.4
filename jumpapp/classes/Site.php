@@ -20,6 +20,9 @@ use stdClass;
  * and/or retrieving the site's icon.
  */
 class Site {
+    private Config $config;
+    private Cache $cache;
+    private array $defaults;
 
     public string $id;
     public string $name;
@@ -36,7 +39,10 @@ class Site {
      * @param array $sitearray Array of options for this site from sites.json.
      * @param array $defaults Array of default values for this site to use, defined in sites.json.
      */
-    public function __construct(private Config $config, private Cache $cache, array $sitearray, private array $defaults) {
+    public function __construct(Config $config, Cache $cache, array $sitearray, array $defaults) {
+        $this->config = $config;
+        $this->cache = $cache;
+        $this->defaults = $defaults;
         if (!isset($sitearray['name'], $sitearray['url'])) {
             throw new \Exception('The array passed to Site() must contain the keys "name" and "url"!');
         }
@@ -58,7 +64,7 @@ class Site {
      * @return object Containing mimetype and raw image data.
      */
     public function get_favicon_image_data(): object {
-        return $this->cache->load(cachename: 'sites/favicons', key: $this->id, callback: function() {
+        return $this->cache->load('sites/favicons', $this->id, function() {
             // Use the applications own default icon unless one is supplied via the sites.json file.
             $defaulticon = $this->config->get('defaulticonpath');
             if (isset($this->defaults['icon'])) {
